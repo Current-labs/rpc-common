@@ -150,7 +150,11 @@ void http_send_digest_cors_preflight_response(struct mg_connection *c) {
 }
 
 static void mg_rpc_channel_http_send_cors_preflight(struct mg_rpc_channel *ch) {
+  struct mg_rpc_channel_http_data *chd =
+      (struct mg_rpc_channel_http_data *) ch->channel_data;
+
   http_send_digest_cors_preflight_response(chd->nc);
+
   /* We sent a response, the channel is no more. */
   chd->nc->flags |= MG_F_SEND_AND_CLOSE;
   chd->nc = NULL;

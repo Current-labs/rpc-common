@@ -48,7 +48,7 @@
 
 #define HTTP_URI_PREFIX "/rpc"
 
-#define HTTP_PREFLIGHT_METHOD "OPTIONS"
+static const char *preflight_method = "OPTIONS"
 
 static char *s_acl_file = NULL;
 static struct mg_rpc *s_global_mg_rpc;
@@ -389,7 +389,7 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
     /*
      * Check CORS preflight
      */
-    if (mg_vcmp(ri->method, HTTP_PREFLIGHT_METHOD) == 0) {
+    if (mg_vcmp(ri->method, preflight_method) == 0) {
       if (ri->ch->send_cors_preflight != NULL) {
         ri->ch->send_cors_preflight(ri->ch);
         mg_rpc_free_request_info(ri);
