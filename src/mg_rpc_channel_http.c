@@ -122,13 +122,19 @@ clean:
   return ret;
 }
 
+// Ripped from mg_http.c#mg_http_send_digest_auth_request
 void http_send_digest_auth_request(struct mg_connection *c,
                                       const char *domain) {
-  mg_http_send_digest_auth_request(c, domain);
-
   // Add CORS headers
   struct mg_str origin_headers = mg_mk_str(s_headers);
-  mg_printf(c, "%.*s\r\n", (int) origin_headers.len, origin_headers.p);
+  mg_printf(c,
+          "HTTP/1.1 401 Unauthorized\r\n"
+          "WWW-Authenticate: Digest qop=\"auth\", "
+          "realm=\"%s\", nonce=\"%lx\"\r\n"
+          "%.*s\r\n"
+          "Content-Length: 0\r\n\r\n",
+          domain, (unsigned long) mg_time(),
+          (int) origin_headers.len, origin_headers.p);
 }
 
 
