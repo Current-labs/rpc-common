@@ -386,6 +386,8 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
   auth_file = mgos_sys_config_get_rpc_auth_file();
 
   if (auth_domain != NULL && auth_file != NULL) {
+    LOG(LL_INFO, ("Received request '%.*s', Preflight method: '%s'", (int) ri->method.len,
+                ri->method.p, preflight_method));
     /*
      * Check CORS preflight
      */
