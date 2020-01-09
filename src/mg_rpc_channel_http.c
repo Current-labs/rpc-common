@@ -138,6 +138,25 @@ void http_send_digest_auth_request(struct mg_connection *c,
           domain, (unsigned long) mg_time());
 }
 
+void http_send_digest_cors_preflight_response(struct mg_connection *c) {
+  // Add CORS headers
+  mg_printf(c,
+          "HTTP/1.1 200 OK\r\n"
+          "Access-Control-Allow-Origin: *\r\n"
+          "Access-Control-Allow-Headers: Authorization\r\n"
+          "Access-Control-Allow-Methods: GET, POST\r\n"
+          "Connection: Keep-Alive\r\n"
+          "Content-Length: 0\r\n\r\n");
+}
+
+static void mg_rpc_channel_http_send_cors_preflight(struct mg_rpc_channel *ch) {
+  http_send_digest_cors_preflight_response(chd->nc);
+  /* We sent a response, the channel is no more. */
+  chd->nc->flags |= MG_F_SEND_AND_CLOSE;
+  chd->nc = NULL;
+  mgos_invoke_cb(ch_closed, ch, false /* from_isr */);
+  LOG(LL_DEBUG, ("%p sent 200", ch));
+}
 
 static void mg_rpc_channel_http_send_not_authorized(struct mg_rpc_channel *ch,
                                                     const char *auth_domain) {
@@ -260,6 +279,7 @@ struct mg_rpc_channel *mg_rpc_channel_http(struct mg_connection *nc,
    */
   ch->is_broadcast_enabled = mg_rpc_channel_false;
   ch->get_authn_info = mg_rpc_channel_http_get_authn_info;
+  ch->send_cors_preflight = mg_rpc_channel_http_send_cors_preflight;
   ch->send_not_authorized = mg_rpc_channel_http_send_not_authorized;
   ch->get_info = mg_rpc_channel_http_get_info;
 

@@ -81,6 +81,11 @@ struct mg_rpc_channel {
                          struct mg_rpc_authn_info *authn);
 
   /*
+   * Sends a CORS preflight response
+   */
+  bool (*send_cors_preflight)(struct mg_rpc_channel *ch);
+
+  /*
    * Send "not authorized" response in a channel-specific way. If channel
    * doesn't have specific way to send 401, this pointer should be NULL.
    */
