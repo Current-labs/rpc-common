@@ -127,12 +127,13 @@ void http_send_digest_auth_request(struct mg_connection *c,
                                       const char *domain) {
   // Add CORS headers
   mg_printf(c,
-          "HTTP/1.1 401 Unauthorized\r\n"
+          "HTTP/1.1 200 OK\r\n"
           "Access-Control-Allow-Origin: *\r\n"
           "Access-Control-Allow-Headers: Authorization\r\n"
           "Access-Control-Expose-Headers: WWW-Authenticate\r\n"
           "WWW-Authenticate: Digest qop=\"auth\", "
           "realm=\"%s\", nonce=\"%lx\"\r\n"
+          "Connection: Keep-Alive"
           "Content-Length: 0\r\n\r\n",
           domain, (unsigned long) mg_time());
 }
