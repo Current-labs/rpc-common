@@ -128,7 +128,7 @@ void http_send_digest_auth_request(struct mg_connection *c,
 
   // Add CORS headers
   struct mg_str origin_headers = mg_mk_str(s_headers);
-  mg_printf(nc, "%.*s\r\n", (int) origin_headers.len, origin_headers.p);
+  mg_printf(c, "%.*s\r\n", (int) origin_headers.len, origin_headers.p);
 }
 
 
