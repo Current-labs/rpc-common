@@ -83,7 +83,7 @@ struct mg_rpc_channel {
   /*
    * Sends a CORS preflight response
    */
-  bool (*send_cors_preflight)(struct mg_rpc_channel *ch);
+  void (*send_cors_preflight)(struct mg_rpc_channel *ch);
 
   /*
    * Send "not authorized" response in a channel-specific way. If channel
