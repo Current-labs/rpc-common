@@ -132,7 +132,6 @@ void http_send_digest_auth_request(struct mg_connection *c,
           "Access-Control-Allow-Headers: *\r\n"
           "WWW-Authenticate: Digest qop=\"auth\", "
           "realm=\"%s\", nonce=\"%lx\"\r\n"
-          "Content-Length: 0\r\n\r\n",
           domain, (unsigned long) mg_time());
 }
 
