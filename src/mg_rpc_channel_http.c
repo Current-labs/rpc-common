@@ -122,6 +122,16 @@ clean:
   return ret;
 }
 
+void http_send_digest_auth_request(struct mg_connection *c,
+                                      const char *domain) {
+  mg_http_send_digest_auth_request(c, domain);
+
+  // Add CORS headers
+  struct mg_str origin_headers = mg_mk_str(s_headers);
+  mg_printf(nc, "%.*s\r\n", (int) origin_headers.len, origin_headers.p);
+}
+
+
 static void mg_rpc_channel_http_send_not_authorized(struct mg_rpc_channel *ch,
                                                     const char *auth_domain) {
   struct mg_rpc_channel_http_data *chd =
@@ -139,7 +149,7 @@ static void mg_rpc_channel_http_send_not_authorized(struct mg_rpc_channel *ch,
 
   if (!nc_is_valid(ch)) return;
 
-  mg_http_send_digest_auth_request(chd->nc, auth_domain);
+  http_send_digest_auth_request(chd->nc, auth_domain);
   /* We sent a response, the channel is no more. */
   chd->nc->flags |= MG_F_SEND_AND_CLOSE;
   chd->nc = NULL;
