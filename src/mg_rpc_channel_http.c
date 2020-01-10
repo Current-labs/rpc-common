@@ -131,7 +131,7 @@ void http_send_digest_auth_request(struct mg_connection *c,
   mg_printf(c,
           "HTTP/1.1 401 Unauthorized\r\n"
           "Access-Control-Allow-Origin: *\r\n"
-          "Access-Control-Allow-Headers: Authorization\r\n"
+          "Access-Control-Allow-Headers: Authorization, Content-Type\r\n"
           "Access-Control-Expose-Headers: WWW-Authenticate\r\n"
           "WWW-Authenticate: Digest qop=\"auth\", "
           "realm=\"%s\", nonce=\"%lx\"\r\n"
@@ -155,7 +155,7 @@ void http_send_digest_cors_preflight_response(struct mg_connection *c) {
   mg_printf(c,
           "HTTP/1.1 200 OK\r\n"
           "Access-Control-Allow-Origin: *\r\n"
-          "Access-Control-Allow-Headers: Authorization\r\n"
+          "Access-Control-Allow-Headers: Authorization, Content-Type\r\n"
           "Access-Control-Allow-Methods: GET, POST\r\n"
           "Connection: Keep-Alive\r\n"
           "Content-Length: 0\r\n\r\n");
