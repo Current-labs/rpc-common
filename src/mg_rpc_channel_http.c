@@ -27,6 +27,8 @@
 
 #include "mgos_hal.h"
 
+static const char *preflight_method = "OPTIONS";
+
 static const char *s_headers =
     "Content-Type: application/json\r\n"
     "Access-Control-Allow-Origin: *\r\n"

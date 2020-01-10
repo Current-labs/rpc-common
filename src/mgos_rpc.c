@@ -48,8 +48,6 @@
 
 #define HTTP_URI_PREFIX "/rpc"
 
-static const char *preflight_method = "OPTIONS";
-
 static char *s_acl_file = NULL;
 static struct mg_rpc *s_global_mg_rpc;
 
