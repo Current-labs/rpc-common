@@ -80,6 +80,12 @@ struct mg_rpc_channel {
                          const char *auth_file,
                          struct mg_rpc_authn_info *authn);
 
+
+  /*
+   * Check if request is CORS preflight
+   */
+  bool (*cors_preflight_check)(struct mg_rpc_channel *ch);
+
   /*
    * Sends a CORS preflight response
    */

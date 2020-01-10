@@ -389,22 +389,17 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
     /*
      * Check CORS preflight
      */
-    if (ri->ch != NULL) {
-      struct mg_rpc_channel_http_data *chd =
-          (struct mg_rpc_channel_http_data *) ri->ch->channel_data;
-      LOG(LL_INFO, ("Received request '%.*s', Preflight method: '%s'",
-                  (int) chd->hm->method.len, chd->hm->method.p, preflight_method));
-
-      if (mg_vcmp(&chd->hm->method, preflight_method) == 0) {
+    if (ri->ch->cors_preflight_check != NULL) {
+      if (ri->ch->cors_preflight_check(ri->ch)) {
         if (ri->ch->send_cors_preflight != NULL) {
           ri->ch->send_cors_preflight(ri->ch);
           mg_rpc_free_request_info(ri);
         } else {
-            /* TODO(dfrank): implement nc properly, instead of always setting it to 1.
-            */
-            mg_rpc_send_error_jsonf(
-                    ri, 401, "{auth_type: %Q, nonce: %llu, nc: %d, realm: %Q}", "digest",
-                    (uint64_t) mg_time(), 1, mgos_sys_config_get_rpc_auth_domain());
+          /* TODO(dfrank): implement nc properly, instead of always setting it to 1.
+          */
+          mg_rpc_send_error_jsonf(
+                  ri, 401, "{auth_type: %Q, nonce: %llu, nc: %d, realm: %Q}", "digest",
+                  (uint64_t) mg_time(), 1, mgos_sys_config_get_rpc_auth_domain());
         }
         ri = NULL;
         ret = false;

@@ -138,6 +138,16 @@ void http_send_digest_auth_request(struct mg_connection *c,
           domain, (unsigned long) mg_time());
 }
 
+static bool mg_rpc_channel_http_cors_preflight_check(struct mg_rpc_channel *ch) {
+   struct mg_rpc_channel_http_data *chd =
+       (struct mg_rpc_channel_http_data *) ri->ch->channel_data;
+
+   LOG(LL_INFO, ("Received request '%.*s', Preflight method: '%s'",
+               (int) chd->hm->method.len, chd->hm->method.p, preflight_method));
+
+   return (mg_vcmp(&chd->hm->method, preflight_method) == 0);
+}
+
 void http_send_digest_cors_preflight_response(struct mg_connection *c) {
   // Add CORS headers
   mg_printf(c,
@@ -283,6 +293,7 @@ struct mg_rpc_channel *mg_rpc_channel_http(struct mg_connection *nc,
    */
   ch->is_broadcast_enabled = mg_rpc_channel_false;
   ch->get_authn_info = mg_rpc_channel_http_get_authn_info;
+  ch->cors_preflight_check = mg_rpc_channel_http_cors_preflight_check; 
   ch->send_cors_preflight = mg_rpc_channel_http_send_cors_preflight;
   ch->send_not_authorized = mg_rpc_channel_http_send_not_authorized;
   ch->get_info = mg_rpc_channel_http_get_info;
