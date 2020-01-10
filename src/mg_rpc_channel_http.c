@@ -140,7 +140,7 @@ void http_send_digest_auth_request(struct mg_connection *c,
 
 static bool mg_rpc_channel_http_cors_preflight_check(struct mg_rpc_channel *ch) {
    struct mg_rpc_channel_http_data *chd =
-       (struct mg_rpc_channel_http_data *) ri->ch->channel_data;
+       (struct mg_rpc_channel_http_data *) ch->channel_data;
 
    LOG(LL_INFO, ("Received request '%.*s', Preflight method: '%s'",
                (int) chd->hm->method.len, chd->hm->method.p, preflight_method));
