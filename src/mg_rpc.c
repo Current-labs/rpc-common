@@ -895,7 +895,7 @@ bool mg_rpc_send_error_jsonf(struct mg_rpc_request_info *ri, int error_code,
 
 bool mg_rpc_check_digest_auth(struct mg_rpc_request_info *ri) {
   if (ri->authn_info.username.len > 0) {
-    LOG(LL_DEBUG,
+    LOG(LL_INFO,
         ("Already have username in request info: \"%.*s\", skip checking",
          (int) ri->authn_info.username.len, ri->authn_info.username.p));
     return true;
@@ -917,14 +917,14 @@ bool mg_rpc_check_digest_auth(struct mg_rpc_request_info *ri) {
       struct mg_str cnonce = mg_mk_str_n(tcnonce.ptr, tcnonce.len);
       struct mg_str response = mg_mk_str_n(tresponse.ptr, tresponse.len);
 
-      LOG(LL_DEBUG, ("Got auth: Realm:%.*s, Username:%.*s, Nonce: %.*s, "
+      LOG(LL_INFO, ("Got auth: Realm:%.*s, Username:%.*s, Nonce: %.*s, "
                      "CNonce:%.*s, Response:%.*s",
                      (int) realm.len, realm.p, (int) username.len, username.p,
                      (int) nonce.len, nonce.p, (int) cnonce.len, cnonce.p,
                      (int) response.len, response.p));
 
       if (mg_vcmp(&realm, mgos_sys_config_get_rpc_auth_domain()) != 0) {
-        LOG(LL_WARN,
+        LOG(LL_INFO,
             ("Got auth request with different realm: expected: "
              "\"%s\", got: \"%.*s\"",
              mgos_sys_config_get_rpc_auth_domain(), (int) realm.len, realm.p));
@@ -949,16 +949,16 @@ bool mg_rpc_check_digest_auth(struct mg_rpc_request_info *ri) {
         fclose(htdigest_fp);
 
         if (authenticated) {
-          LOG(LL_DEBUG, ("Auth ok"));
+          LOG(LL_INFO, ("Auth ok"));
           ri->authn_info.username = mg_strdup(username);
           return true;
         } else {
-          LOG(LL_WARN, ("Invalid digest auth for user %.*s", (int) username.len,
+          LOG(LL_INFO, ("Invalid digest auth for user %.*s", (int) username.len,
                         username.p));
         }
       }
     } else {
-      LOG(LL_WARN, ("Not all auth parts are present, ignoring"));
+      LOG(LL_INFO, ("Not all auth parts are present, ignoring"));
     }
   }
 #endif /* MGOS_HAVE_MONGOOSE */

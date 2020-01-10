@@ -410,6 +410,7 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
      * provided in the RPC frame.
      */
     if (!mg_rpc_check_digest_auth(ri)) {
+      LOG(LL_INFO, ("No username provided. Sending 401"));
       ri = NULL;
       ret = false;
       goto clean;
@@ -426,6 +427,7 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
      * No valid auth; send 401. If a channel has its channel-specific method to
      * send 401, call it; otherwise send generic RPC response.
      */
+    LOG(LL_INFO, ("No username provided. Sending 401"));
 
     if (ri->ch->send_not_authorized != NULL) {
       ri->ch->send_not_authorized(ri->ch, auth_domain);
@@ -449,6 +451,7 @@ static bool mgos_rpc_req_prehandler(struct mg_rpc_request_info *ri,
    */
 
   if (!mgos_conf_check_access_n(ri->authn_info.username, acl_entry)) {
+    LOG(LL_INFO, ("Bad credentials. 403"));
     mg_rpc_send_errorf(ri, 403, "unauthorized");
     ri = NULL;
     ret = false;
