@@ -129,7 +129,7 @@ void http_send_digest_auth_request(struct mg_connection *c,
                                       const char *domain) {
   // Add CORS headers
   mg_printf(c,
-          "HTTP/1.1 401 Unauthorized\r\n"
+          "HTTP/1.1 418 I'm a teapot\r\n"
           "Access-Control-Allow-Origin: *\r\n"
           "Access-Control-Allow-Headers: Authorization, Content-Type\r\n"
           "Access-Control-Expose-Headers: WWW-Authenticate\r\n"
