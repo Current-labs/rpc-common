@@ -17,6 +17,7 @@
 
 #if defined(MGOS_HAVE_HTTP_SERVER) && MGOS_ENABLE_RPC_CHANNEL_HTTP
 
+#include "mg_http.h"
 #include "mg_rpc_channel_http.h"
 #include "mg_rpc.h"
 #include "mg_rpc_channel.h"
@@ -124,12 +125,18 @@ clean:
   return ret;
 }
 
-// Ripped from mg_http.c#mg_http_send_digest_auth_request
+// Ripped from mg_http.c#mg_http_send_digest_auth_request with sweet mods
 void http_send_digest_auth_request(struct mg_connection *c,
-                                      const char *domain) {
+                                      const char *domain, bool use_401) {
   // Add CORS headers
+  char *status_code;
+  if (use_401) {
+    status_code = "401 Unauthorized";
+  } else {
+    status_code = "418 I'm a teapot";
+  }
   mg_printf(c,
-          "HTTP/1.1 418 I'm a teapot\r\n"
+          "HTTP/1.1 %s\r\n"
           "Access-Control-Allow-Origin: *\r\n"
           "Access-Control-Allow-Headers: Authorization, Content-Type\r\n"
           "Access-Control-Expose-Headers: WWW-Authenticate\r\n"
@@ -137,7 +144,7 @@ void http_send_digest_auth_request(struct mg_connection *c,
           "realm=\"%s\", nonce=\"%lx\"\r\n"
           "Connection: Keep-Alive\r\n"
           "Content-Length: 0\r\n\r\n",
-          domain, (unsigned long) mg_time());
+          status_code, domain, (unsigned long) mg_time());
 }
 
 static bool mg_rpc_channel_http_cors_preflight_check(struct mg_rpc_channel *ch) {
@@ -191,7 +198,13 @@ static void mg_rpc_channel_http_send_not_authorized(struct mg_rpc_channel *ch,
 
   if (!nc_is_valid(ch)) return;
 
-  http_send_digest_auth_request(chd->nc, auth_domain);
+  bool use_401 = true;
+  struct http_message *hm = (struct http_message *) chd->hm;
+  if (mg_get_http_header(hm, "X-Requested-With")) {
+    use_401 = false;
+  }
+
+  http_send_digest_auth_request(chd->nc, auth_domain, use_401);
   /* We sent a response, the channel is no more. */
   chd->nc->flags |= MG_F_SEND_AND_CLOSE;
   chd->nc = NULL;
