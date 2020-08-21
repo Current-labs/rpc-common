@@ -40,6 +40,7 @@
 #include "mgos_net.h"
 #include "mgos_ro_vars.h"
 #include "mgos_sys_config.h"
+#include "mgos_time.h"
 #include "mgos_timers.h"
 #include "mgos_utils.h"
 #ifdef MGOS_HAVE_WIFI
@@ -75,12 +76,19 @@ static void mgos_rpc_http_handler(struct mg_connection *nc, int ev,
                                   void *ev_data, void *user_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
     /* Create and add the channel to mg_rpc */
+    bool is_new = false;
     struct mg_rpc_channel *ch =
         mg_rpc_channel_http(nc, mgos_sys_config_get_http_auth_domain(),
-                            mgos_sys_config_get_http_auth_file());
+                            mgos_sys_config_get_http_auth_file(), &is_new);
     struct http_message *hm = (struct http_message *) ev_data;
     size_t prefix_len = sizeof(HTTP_URI_PREFIX) - 1;
-    mg_rpc_add_channel(mgos_rpc_get_global(), mg_mk_str(""), ch);
+    if (ch == NULL) {
+      mg_http_send_error(nc, 500, "Failed to create channel");
+      return;
+    }
+    if (is_new) {
+      mg_rpc_add_channel(mgos_rpc_get_global(), mg_mk_str(""), ch);
+    }
 
     /*
      * Handle the request. If there is method name after /rpc,
@@ -196,11 +204,16 @@ int mgos_print_sys_info(struct json_out *out) {
   return len;
 }
 
+static int json_printf_sysinfo_callback(struct json_out *out, va_list *ap) {
+  (void) ap;
+  return mgos_print_sys_info(out);
+}
+
 static void mgos_sys_get_info_handler(struct mg_rpc_request_info *ri,
                                       void *cb_arg,
                                       struct mg_rpc_frame_info *fi,
                                       struct mg_str args) {
-  mg_rpc_send_responsef(ri, "%M", (json_printf_callback_t) mgos_print_sys_info);
+  mg_rpc_send_responsef(ri, "%M", json_printf_sysinfo_callback);
   (void) cb_arg;
   (void) args;
   (void) fi;
@@ -504,7 +517,7 @@ bool mgos_rpc_common_init(void) {
   mg_rpc_set_prehandler(c, mgos_rpc_req_prehandler, NULL);
 
 #if defined(MGOS_HAVE_HTTP_SERVER) && MGOS_ENABLE_RPC_CHANNEL_HTTP
-  {
+  if (mgos_sys_config_get_rpc_http_enable()) {
     struct mg_http_endpoint_opts opts;
     memset(&opts, 0, sizeof(opts));
 
@@ -522,12 +535,14 @@ bool mgos_rpc_common_init(void) {
   }
 
 #if MGOS_ENABLE_SYS_SERVICE
-  mg_rpc_add_handler(c, "Sys.Reboot", "{delay_ms: %d}", mgos_sys_reboot_handler,
-                     NULL);
-  mg_rpc_add_handler(c, "Sys.GetInfo", "", mgos_sys_get_info_handler, NULL);
-  mg_rpc_add_handler(c, "Sys.SetDebug",
-                     "{udp_log_addr: %Q, level: %d, file_level: %Q}",
-                     mgos_sys_set_debug_handler, NULL);
+  if (mgos_sys_config_get_rpc_service_sys_enable()) {
+    mg_rpc_add_handler(c, "Sys.Reboot", "{delay_ms: %d}",
+                       mgos_sys_reboot_handler, NULL);
+    mg_rpc_add_handler(c, "Sys.GetInfo", "", mgos_sys_get_info_handler, NULL);
+    mg_rpc_add_handler(c, "Sys.SetDebug",
+                       "{udp_log_addr: %Q, level: %d, file_level: %Q}",
+                       mgos_sys_set_debug_handler, NULL);
+  }
 #endif
 
   mgos_event_add_group_handler(MGOS_EVENT_GRP_NET, mg_rpc_net_ready, NULL);
