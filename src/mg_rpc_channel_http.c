@@ -365,11 +365,6 @@ struct mg_rpc_channel *mg_rpc_channel_http(struct mg_connection *nc,
                                            const char *default_auth_domain,
                                            const char *default_auth_file,
                                            bool *is_new) {
-
-struct mg_rpc_channel *mg_rpc_channel_http(struct mg_connection *nc,
-                                           const char *default_auth_domain,
-                                           const char *default_auth_file,
-                                           bool *is_new) {
   struct mg_rpc_channel *ch = NULL;
   struct mg_rpc_channel_http_data *chd, *chdt;
   SLIST_FOREACH_SAFE(chd, &s_http_chd, next, chdt) {
